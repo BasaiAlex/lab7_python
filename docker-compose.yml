@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: library_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  app:
+    image: python:latest
+    restart: on-failure
+    working_dir: /app
+    volumes:
+      - ./app:/app
+    depends_on:
+      - db
+    command: ["bash", "-c", "pip install --root-user-action=ignore -r requirements.txt && python init_db.py && python console-output.py; while true; do sleep 1000; done"]
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  db_data:
